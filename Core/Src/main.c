@@ -26,9 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "led.h"
 #include "lcd.h"
-#include "stdio.h"
 #include "bsp_dma.h"
-#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,8 +107,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, 4800); // 设置串口中断缓冲区及中断阈值(当前为1)
-
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_RX_BUF_SIZE); // 设置串口中断缓冲区及中断阈值(当前为1)
 
   LCD_Init();
 
