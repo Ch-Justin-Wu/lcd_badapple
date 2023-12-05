@@ -107,17 +107,20 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_RX_BUF_SIZE); // 设置串口中断缓冲区及中断阈值(当前为1)
+ 
 
   LCD_Init();
 
   LCD_Clear(Black);
   LCD_SetBackColor(Black);
   LCD_SetTextColor(White);
+  
 
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_All, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_RX_BUF_SIZE); // 设置串口中断缓冲区及中断阈值(当前为1)
 
   /* USER CODE END 2 */
 
