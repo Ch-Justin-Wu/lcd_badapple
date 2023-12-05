@@ -211,6 +211,8 @@ void LCD_CtrlLinesConfig(void);
 void LCD_BusIn(void);
 void LCD_BusOut(void);
 
+void LCD_UartPic(uc8 *c);
+
 
 #endif /* __LCD_H */
 

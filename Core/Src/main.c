@@ -27,6 +27,8 @@
 #include "led.h"
 #include "lcd.h"
 #include "stdio.h"
+#include "bsp_dma.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define UART_RX_BUF_SIZE 4800
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,6 +50,7 @@
 
 /* USER CODE BEGIN PV */
 
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,7 +61,21 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (buf == 1) // 若果当前是使用的是buf1
+  {
+    buf = 2;                                                       // 下次使用buf2
+    disp = 1;                                                      // 告诉main显示buf1的内容到屏幕
+    HAL_UART_Receive_DMA(&huart1, uart_rx_buf2, UART_RX_BUF_SIZE); // 切换为buf2
+  }
+  else
+  {
+    buf = 1;                                                       // 下次使用buf1
+    disp = 2;                                                      // 告诉main显示buf2的内容到屏幕
+    HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_RX_BUF_SIZE); // 切换为buf1
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -92,16 +109,18 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  led_disp(0x00); // led初始化
-  LCD_Init();     // lcd屏幕初始化
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, 4800); // 设置串口中断缓冲区及中断阈值(当前为1)
 
- // 清除LCD屏幕上的内容
+
+  LCD_Init();
+
   LCD_Clear(Black);
-  // 设置LCD屏幕上的背景颜色
   LCD_SetBackColor(Black);
-  // 设置LCD屏幕上的文字颜色
   LCD_SetTextColor(White);
 
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_All, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 
   /* USER CODE END 2 */
 
@@ -109,24 +128,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    if (disp == 1)
+    {
+      disp = 0;
+      LCD_UartPic(uart_rx_buf1);
+    }
+    else if (disp == 2)
+    {
+      disp = 0;
+      LCD_UartPic(uart_rx_buf2);
+    }
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    int8_t text[30];
-    uint8_t i = 5;
-    sprintf(text, "   CNBR:%d    ", i);
-    LCD_DisplayStringLine(Line9, text);
-
-   uint8_t led_values[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-    // 遍历led_values数组，将每一个值传入led_disp函数，每次循环延迟500ms
-    for (int i = 0; i < 8; i++)
-    {
-      led_disp(led_values[i]);
-      HAL_Delay(500);
-      led_disp(0x00);
-      HAL_Delay(500);
-    }
   }
   /* USER CODE END 3 */
 }

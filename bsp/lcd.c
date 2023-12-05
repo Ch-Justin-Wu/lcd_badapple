@@ -264,6 +264,36 @@ void LCD_DrawChar(u8 Xpos, u16 Ypos, uc16 *c)
 		LCD_SetCursor(Xaddress, Ypos);
 	}
 }
+
+void LCD_UartPic(uc8 *c)
+{
+	u32 index = 1, i = 0;
+	
+	u8 x = 40;
+	u16 y = 0;
+	
+  
+	for(; x < 199; x++)
+	{
+		LCD_SetCursor(x, 280);
+		LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+		for(y = 0; y < 30; y++)
+		{
+			for(i = 0; i < 8; i ++)
+			{
+				if((c[index] & (1 << i)) == 0x00)
+				{
+					LCD_WriteRAM(BackColor);
+				}
+				else
+				{
+					LCD_WriteRAM(TextColor);
+				}
+			}
+			index ++;
+		}
+	}
+}
 /*******************************************************************************
 * Function Name  : LCD_DisplayChar
 * Description    : Displays one character (16dots width, 24dots height).
