@@ -27,6 +27,7 @@
 #include "led.h"
 #include "lcd.h"
 #include "bsp_dma.h"
+#include "stm32g4xx_hal_uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
