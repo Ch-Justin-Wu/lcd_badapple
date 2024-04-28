@@ -212,8 +212,8 @@ void LCD_BusIn(void);
 void LCD_BusOut(void);
 
 void LCD_UartPic(uc8 *c);
-
+void LCD_UartPic__(uc8 *c);
 
 #endif /* __LCD_H */
 
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
+    /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

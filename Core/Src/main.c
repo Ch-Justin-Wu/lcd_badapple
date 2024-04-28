@@ -28,16 +28,17 @@
 #include "lcd.h"
 #include "bsp_dma.h"
 #include "stm32g4xx_hal_uart.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#define UART_IT_BUFF_SIZE 9600U
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define UART_RX_BUF_SIZE 4800
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,7 +50,6 @@
 
 /* USER CODE BEGIN PV */
 
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,21 +60,80 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+// {
+//   if (buf == 1) // 若果当前是使用的是buf1
+//   {
+//     buf = 2;                                                       // 下次使用buf2
+//     disp = 1;                                                      // 告诉main显示buf1的内容到屏幕
+//     HAL_UART_Receive_DMA(&huart1, uart_rx_buf2, UART_IT_BUFF_SIZE); // 切换为buf2
+//   }
+//   else
+//   {
+//     buf = 1;                                                       // 下次使用buf1
+//     disp = 2;                                                      // 告诉main显示buf2的内容到屏幕
+//     HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE); // 切换为buf1
+//   }
+// }
+
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+// {
+//   if (buf == 1) // 若果当前是使用的是buf1
+//   {
+//     buf = 2;                                                      // 下次使用buf2
+//     disp = 1;                                                     // 告诉main显示buf1的内容到屏幕
+//     HAL_UART_Receive_IT(&huart1, uart_rx_buf2, UART_IT_BUFF_SIZE); // 切换为buf2
+//   }
+//   else
+//   {
+//     buf = 1;                                                      // 下次使用buf1
+//     disp = 2;                                                     // 告诉main显示buf2的内容到屏幕
+//     HAL_UART_Receive_IT(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE); // 切换为buf1
+//   }
+// }
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-  if (buf == 1) // 若果当前是使用的是buf1
+
   {
-    buf = 2;                                                       // 下次使用buf2
-    disp = 1;                                                      // 告诉main显示buf1的内容到屏幕
-    HAL_UART_Receive_DMA(&huart1, uart_rx_buf2, UART_RX_BUF_SIZE); // 切换为buf2
-  }
-  else
-  {
-    buf = 1;                                                       // 下次使用buf1
-    disp = 2;                                                      // 告诉main显示buf2的内容到屏幕
-    HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_RX_BUF_SIZE); // 切换为buf1
+    if (buf == 1) // 若果当前是使用的是buf1
+    {
+      buf = 2;  // 下次使用buf2
+      disp = 1; // 告诉main显示buf1的内容到屏幕
+
+      HAL_UARTEx_ReceiveToIdle_IT(&huart1, uart_rx_buf2, UART_IT_BUFF_SIZE); // 切换为buf2
+    }
+    else
+    {
+      buf = 1;  // 下次使用buf1
+      disp = 2; // 告诉main显示buf2的内容到屏幕
+
+      HAL_UARTEx_ReceiveToIdle_IT(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE); // 切换为buf1
+    }
   }
 }
+
+// void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+// {
+
+//   {
+//     if (buf == 1) // 若果当前是使用的是buf1
+//     {
+//       buf = 2;  // 下次使用buf2
+//       disp = 1; // 告诉main显示buf1的内容到屏幕
+
+//       HAL_UARTEx_ReceiveToIdle_DMA(&huart1, uart_rx_buf2, UART_IT_BUFF_SIZE); // 切换为buf2
+//     }
+//     else
+//     {
+//       buf = 1;  // 下次使用buf1
+//       disp = 2; // 告诉main显示buf2的内容到屏幕
+
+//       HAL_UARTEx_ReceiveToIdle_DMA(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE); // 切换为buf1
+//     }
+//   }
+// }
+
 /* USER CODE END 0 */
 
 /**
@@ -108,21 +167,21 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
- 
 
   LCD_Init();
 
   LCD_Clear(Black);
   LCD_SetBackColor(Black);
   LCD_SetTextColor(White);
-  
 
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_All, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 
-  HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_RX_BUF_SIZE); // 设置串口中断缓冲区及中断阈值(当前为1)
-
+  // HAL_UART_Receive_IT(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE);
+  // HAL_UART_Receive_DMA(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE); // 设置串口中断缓冲区及中断阈值(当前为1)
+  HAL_UARTEx_ReceiveToIdle_IT(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE);
+  // HAL_UARTEx_ReceiveToIdle_DMA(&huart1, uart_rx_buf1, UART_IT_BUFF_SIZE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
